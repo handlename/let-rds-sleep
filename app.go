@@ -52,7 +52,7 @@ type Option func(app *App) error
 func init() {
 	logLevel := os.Getenv("LOG_LEVEL")
 	if logLevel == "" {
-		logLevel = "WARN"
+		logLevel = "INFO"
 	}
 
 	filter := &logutils.LevelFilter{
