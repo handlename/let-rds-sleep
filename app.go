@@ -160,7 +160,7 @@ func (app *App) Run(ctx context.Context) error {
 		log.Printf("[INFO] processing %s", target)
 
 		if app.DryRun {
-			log.Printf("[INFO] process for %s is not completed because running as dryrun", target)
+			log.Printf("[INFO] process for %s is not completed [dryrun]", target)
 			continue
 		}
 
