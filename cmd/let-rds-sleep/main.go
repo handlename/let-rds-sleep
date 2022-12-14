@@ -11,19 +11,30 @@ import (
 	lrs "github.com/handlename/let-rds-sleep"
 )
 
+var (
+	version string
+)
+
 func main() {
 	var (
 		flagMode    string
 		flagTarget  string
 		flagExclude string
 		flagDryRun  bool
+		flagVersion bool
 	)
 
 	flag.StringVar(&flagMode, "mode", "", "STOP or START")
 	flag.StringVar(&flagTarget, "target", "", "TagName=Value,... If no tags given, treat all of resources as target")
 	flag.StringVar(&flagExclude, "exclude", "", "TagName=Value,... If Tag exists exclude the resource")
 	flag.BoolVar(&flagDryRun, "dryrun", false, "show process target only")
+	flag.BoolVar(&flagVersion, "version", false, "display version")
 	flag.Parse()
+
+	if flagVersion {
+		fmt.Printf("let-rds-sleep %s", version)
+		os.Exit(0)
+	}
 
 	app, err := lrs.New(
 		flagMode,
