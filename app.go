@@ -105,7 +105,7 @@ func New(mode string, options ...Option) (*App, error) {
 	case "STOP", "stop":
 		app.process = stop
 	default:
-		return nil, fmt.Errorf("invalid mode")
+		return nil, fmt.Errorf("invalid mode: %s", mode)
 	}
 
 	for _, opt := range options {
