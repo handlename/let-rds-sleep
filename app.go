@@ -141,7 +141,7 @@ func (app *App) HandleRequest(ctx context.Context) error {
 }
 
 func (app *App) Run(ctx context.Context) error {
-	log.Printf("[INFO] rinning as %s mode", app.Mode)
+	log.Printf("[INFO] running as %s mode", app.Mode)
 
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
