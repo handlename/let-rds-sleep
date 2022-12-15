@@ -44,6 +44,7 @@ func main() {
 	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to init app: %s", err)
+		os.Exit(1)
 	}
 
 	if strings.HasPrefix(os.Getenv("AWS_EXECUTION_ENV"), "AWS_Lambda") || os.Getenv("AWS_LAMBDA_RUNTIME_API") != "" {
