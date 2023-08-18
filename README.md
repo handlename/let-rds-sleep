@@ -27,6 +27,21 @@ Usage of ./let-rds-sleep:
     	display version
 ```
 
+Highly recommended to confirm the target resources with `-dryrun` option before execute.
+
+```console
+$ ./let-rds-sleep -mode STOP -target Sleep=true -dryrun
+started as oneshot app
+2023/08/18 14:56:57 [INFO] running as STOP mode
+2023/08/18 14:56:58 [INFO] processing cluster/main
+2023/08/18 14:56:58 [INFO] process for cluster/main is not completed [dryrun]
+2023/08/18 14:56:58 [INFO] processing cluster/loadtest
+2023/08/18 14:56:58 [INFO] process for cluster/loadtest is not completed [dryrun]
+2023/08/18 14:56:58 [INFO] processing instance/sandbox
+2023/08/18 14:56:58 [INFO] process for instance/sandbox is not completed [dryrun]
+bye
+```
+
 ## LISENCE
 
 MIT
