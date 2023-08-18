@@ -25,3 +25,5 @@ go.work
 
 let-rds-sleep
 terraform/*/.terraform*
+terraform/*/bootstrap
+terraform/*/*.zip
