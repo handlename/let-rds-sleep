@@ -101,8 +101,10 @@ func New(mode string, options ...Option) (*App, error) {
 
 	switch mode {
 	case "START", "start":
+		app.Mode = "START"
 		app.process = start
 	case "STOP", "stop":
+		app.Mode = "STOP"
 		app.process = stop
 	default:
 		return nil, fmt.Errorf("invalid mode: %s", mode)
