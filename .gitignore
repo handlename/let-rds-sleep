@@ -24,3 +24,4 @@
 go.work
 
 let-rds-sleep
+terraform/*/.terraform*
