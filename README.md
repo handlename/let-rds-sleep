@@ -13,6 +13,11 @@ $ let-rds-sleep -mode STOP -target Stop=true
 ```console
 $ let-rds-sleep -mode START -target Stop=true
 ```
+
+## INSTALLATION
+
+Please download binary in tarball from [releases](https://github.com/handlename/let-rds-sleep/releases).
+
 ## USAGE
 
 ```console
