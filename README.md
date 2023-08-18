@@ -10,6 +10,9 @@ Based on AWS Official document: https://aws.amazon.com/premiumsupport/knowledge-
 $ let-rds-sleep -mode STOP -target Stop=true
 ```
 
+```console
+$ let-rds-sleep -mode START -target Stop=true
+```
 ## USAGE
 
 ```console
@@ -41,6 +44,12 @@ started as oneshot app
 2023/08/18 14:56:58 [INFO] process for instance/sandbox is not completed [dryrun]
 bye
 ```
+
+## SETUP
+
+This tool is supposed to run periodically as a Lambda function.
+Create a function to stop/start RDS/Aurora and invoke them with EventBridge Event Rule.
+Please refer to the definition examples of each AWS resource in the [terraform/](https://github.com/handlename/let-rds-sleep) directory.
 
 ## LISENCE
 
