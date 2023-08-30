@@ -40,13 +40,13 @@ Highly recommended to confirm the target resources with `-dryrun` option before 
 ```console
 $ ./let-rds-sleep -mode STOP -target Sleep=true -dryrun
 started as oneshot app
-2023/08/18 14:56:57 [INFO] running as STOP mode
-2023/08/18 14:56:58 [INFO] processing cluster/main
-2023/08/18 14:56:58 [INFO] process for cluster/main is not completed [dryrun]
-2023/08/18 14:56:58 [INFO] processing cluster/loadtest
-2023/08/18 14:56:58 [INFO] process for cluster/loadtest is not completed [dryrun]
-2023/08/18 14:56:58 [INFO] processing instance/sandbox
-2023/08/18 14:56:58 [INFO] process for instance/sandbox is not completed [dryrun]
+2023/08/30 16:08:57 [INFO] running as STOP mode
+2023/08/30 16:08:58 [INFO] processing cluster/main
+2023/08/30 16:08:58 [INFO] cluster/main will be STOP [dryrun]
+2023/08/30 16:08:58 [INFO] processing cluster/loadtest
+2023/08/30 16:08:58 [INFO] cluster/loadtest will be STOP [dryrun]
+2023/08/30 16:08:58 [INFO] processing instance/sandbox
+2023/08/30 16:08:58 [INFO] instance/sandbox will be STOP [dryrun]
 bye
 ```
 

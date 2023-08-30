@@ -162,7 +162,7 @@ func (app *App) Run(ctx context.Context) error {
 		log.Printf("[INFO] processing %s", target)
 
 		if app.DryRun {
-			log.Printf("[INFO] process for %s is not completed [dryrun]", target)
+			log.Printf("[INFO] %s will be %s [dryrun]", target, app.Mode)
 			continue
 		}
 
@@ -223,6 +223,8 @@ func (app *App) listTargetResouces(ctx context.Context, svc *rds.Client) ([]Reso
 }
 
 func (app *App) filterResources(resources []Resource) []Resource {
+	log.Printf("[DEBUG] checking resource(s) satisfy target condition(s)")
+
 	candidates := []Resource{}
 
 	for _, r := range resources {
@@ -236,16 +238,18 @@ func (app *App) filterResources(resources []Resource) []Resource {
 
 			if !ok {
 				satisfied = false
-				log.Printf("[DEBUG] %s is not a target because tags %s are not satisfied condition", r, r.TagsAsString())
+				log.Printf("[DEBUG] %s is not a target because tags %s are not satisfy condition(s)", r, r.TagsAsString())
 				break
 			}
 		}
 
 		if satisfied {
 			candidates = append(candidates, r)
-			log.Printf("[DEBUG] %s added to target candidates", r)
+			log.Printf("[DEBUG] %s satisfies target condition, then added to candidates", r)
 		}
 	}
+
+	log.Printf("[DEBUG] checking resource(s) match exclude condition(s)")
 
 	filteredResources := []Resource{}
 
@@ -265,7 +269,7 @@ func (app *App) filterResources(resources []Resource) []Resource {
 
 		if !exclude {
 			filteredResources = append(filteredResources, c)
-			log.Printf("[DEBUG] %s added to target resources", c)
+			log.Printf("[DEBUG] %s not matches exclude condition(s), then added to target resources", c)
 		}
 	}
 
