@@ -1,2 +1,4 @@
 builds:
   - main: ./cmd/let-rds-sleep
+    env:
+      - CGO_ENABLED=0
