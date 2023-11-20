@@ -1,5 +1,7 @@
 VERSION = $(shell git describe --tags | head -1)
 
+export CGO_ENABLED=0
+
 let-rds-sleep: go.mod go.sum *.go
 	go build -ldflags "-s -w -X main.version=${VERSION}" -trimpath ./cmd/$@
 
