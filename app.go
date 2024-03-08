@@ -50,7 +50,7 @@ func (r Resource) TagsAsString() string {
 type Option func(app *App) error
 
 func init() {
-	logLevel := os.Getenv("LOG_LEVEL")
+	logLevel := strings.ToUpper(os.Getenv("LOG_LEVEL"))
 	if logLevel == "" {
 		logLevel = "INFO"
 	}
