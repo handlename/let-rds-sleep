@@ -59,6 +59,14 @@ func parseCLIFlags() *CLIFlags {
 	flag.StringVar(&flags.Exclude, "exclude", "", "TagName=Value,... If Tag exists exclude the resource")
 	flag.BoolVar(&flags.DryRun, "dryrun", false, "show process target only")
 	flag.BoolVar(&flags.Version, "version", false, "display version")
+
+	// overwrite by environment variables
+	flag.VisitAll(func(f *flag.Flag) {
+		if env := getEnv(strings.ToUpper(f.Name)); env != "" {
+			f.Value.Set(env)
+		}
+	})
+
 	flag.Parse()
 
 	return flags
