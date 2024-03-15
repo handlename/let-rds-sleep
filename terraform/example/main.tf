@@ -1,10 +1,10 @@
 terraform {
-  required_version = "1.5.2"
+  required_version = "1.7.5"
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "5.1.0"
+      version = "~> 5"
     }
   }
 
@@ -24,13 +24,21 @@ resource "aws_cloudwatch_event_rule" "stop" {
 }
 
 resource "aws_cloudwatch_event_target" "start" {
-  arn  = aws_lambda_function.let-rds-sleep-start.arn
+  arn  = aws_lambda_function.let-rds-sleep.arn
   rule = aws_cloudwatch_event_rule.start.name
+
+  input = jsonencode({
+    mode : "start",
+  })
 }
 
 resource "aws_cloudwatch_event_target" "stop" {
-  arn  = aws_lambda_function.let-rds-sleep-stop.arn
+  arn  = aws_lambda_function.let-rds-sleep.arn
   rule = aws_cloudwatch_event_rule.stop.name
+
+  input = jsonencode({
+    mode : "stop",
+  })
 }
 
 resource "aws_iam_role" "lambda-let-rds-sleep" {
@@ -93,9 +101,13 @@ data "archive_file" "let-rds-sleep-src" {
   output_path = "lambda_function_payload.zip"
 }
 
-resource "aws_lambda_function" "let-rds-sleep-start" {
+resource "aws_cloudwatch_log_group" "lambda" {
+  name              = "/aws/lambda/let-rds-sleep-start"
+}
+
+resource "aws_lambda_function" "let-rds-sleep" {
   filename      = "lambda_function_payload.zip"
-  function_name = "let-rds-sleep-start"
+  function_name = "let-rds-sleep"
   role          = aws_iam_role.lambda-let-rds-sleep.arn
   handler       = "bootstrap"
 
@@ -106,27 +118,21 @@ resource "aws_lambda_function" "let-rds-sleep-start" {
   environment {
     variables = {
       LET_RDS_SLEEP_LOG_LEVEL = "INFO"
-      LET_RDS_SLEEP_MODE      = "START",
       LET_RDS_SLEEP_TARGET    = "Sleep=true"
     }
   }
 }
 
-resource "aws_lambda_function" "let-rds-sleep-stop" {
-  filename      = "lambda_function_payload.zip"
-  function_name = "let-rds-sleep-stop"
-  role          = aws_iam_role.lambda-let-rds-sleep.arn
-  handler       = "bootstrap"
+resource "aws_lambda_permission" "permission-start" {
+  source_arn    = aws_cloudwatch_event_rule.start.arn
+  function_name = aws_lambda_function.let-rds-sleep.function_name
+  action        = "lambda:InvokeFunction"
+  principal     = "events.amazonaws.com"
+}
 
-  source_code_hash = data.archive_file.let-rds-sleep-src.output_base64sha256
-
-  runtime = "provided.al2"
-
-  environment {
-    variables = {
-      LET_RDS_SLEEP_LOG_LEVEL = "INFO"
-      LET_RDS_SLEEP_MODE      = "STOP",
-      LET_RDS_SLEEP_TARGET    = "Sleep=true"
-    }
-  }
+resource "aws_lambda_permission" "permission-stop" {
+  source_arn    = aws_cloudwatch_event_rule.stop.arn
+  function_name = aws_lambda_function.let-rds-sleep.function_name
+  action        = "lambda:InvokeFunction"
+  principal     = "events.amazonaws.com"
 }
