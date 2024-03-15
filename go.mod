@@ -1,6 +1,6 @@
 module github.com/handlename/let-rds-sleep
 
-go 1.18
+go 1.22
 
 require (
 	github.com/aws/aws-lambda-go v1.32.1

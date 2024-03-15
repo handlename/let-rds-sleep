@@ -20,9 +20,12 @@ type App struct {
 	TargetTags  []types.Tag // only resources having all of tags will be process
 	ExcludeTags []types.Tag // resources having any of tags will not be process
 	DryRun      bool
-
-	process Processor
 }
+
+const (
+	ModeStop  = "stop"
+	ModeStart = "start"
+)
 
 type Processor func(ctx context.Context, svc *rds.Client, target Resource) error
 
@@ -50,7 +53,7 @@ func (r Resource) TagsAsString() string {
 type Option func(app *App) error
 
 func init() {
-	logLevel := os.Getenv("LOG_LEVEL")
+	logLevel := strings.ToUpper(os.Getenv("LOG_LEVEL"))
 	if logLevel == "" {
 		logLevel = "INFO"
 	}
@@ -96,19 +99,8 @@ func OptDryRun(dryrun bool) Option {
 	}
 }
 
-func New(mode string, options ...Option) (*App, error) {
+func New(options ...Option) (*App, error) {
 	app := App{}
-
-	switch mode {
-	case "START", "start":
-		app.Mode = "START"
-		app.process = start
-	case "STOP", "stop":
-		app.Mode = "STOP"
-		app.process = stop
-	default:
-		return nil, fmt.Errorf("invalid mode: %s", mode)
-	}
 
 	for _, opt := range options {
 		if err := opt(&app); err != nil {
@@ -138,12 +130,16 @@ func parseTags(text string) ([]types.Tag, error) {
 	return tags, nil
 }
 
-func (app *App) HandleRequest(ctx context.Context) error {
-	return app.Run(ctx)
+type LambdaEvent struct {
+	Mode string `json:"mode"`
 }
 
-func (app *App) Run(ctx context.Context) error {
-	log.Printf("[INFO] running as %s mode", app.Mode)
+func (app *App) HandleRequest(ctx context.Context, event *LambdaEvent) error {
+	return app.Run(ctx, event.Mode)
+}
+
+func (app *App) Run(ctx context.Context, mode string) error {
+	log.Printf("[INFO] running to %s targets", mode)
 
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
@@ -158,15 +154,20 @@ func (app *App) Run(ctx context.Context) error {
 		return err
 	}
 
+	processor, err := app.selectProcessor(mode)
+	if err != nil {
+		return fmt.Errorf("[ERROR] failed to select processor: %w", err)
+	}
+
 	for _, target := range targets {
 		log.Printf("[INFO] processing %s", target)
 
 		if app.DryRun {
-			log.Printf("[INFO] %s will be %s [dryrun]", target, app.Mode)
+			log.Printf("[INFO] %s will be %s [dryrun]", target, mode)
 			continue
 		}
 
-		err := app.process(ctx, svc, target)
+		err := processor(ctx, svc, target)
 		if err != nil {
 			log.Printf("[DEBUG] failed to process target: %s", target)
 			return err
@@ -301,7 +302,6 @@ func start(ctx context.Context, svc *rds.Client, target Resource) error {
 			log.Printf("[DEBUG] failed to StartDBCluster target: %s", target)
 			return err
 		}
-
 	default:
 		log.Printf("[WARN] unknown target type: %s", target.Type)
 		return nil
@@ -346,4 +346,15 @@ func stop(ctx context.Context, svc *rds.Client, target Resource) error {
 	log.Printf("[INFO] successfully requested to stop %s", target)
 
 	return nil
+}
+
+func (app *App) selectProcessor(mode string) (Processor, error) {
+	switch mode {
+	case ModeStart:
+		return start, nil
+	case ModeStop:
+		return stop, nil
+	default:
+		return nil, fmt.Errorf("unknown mode: %s", mode)
+	}
 }
