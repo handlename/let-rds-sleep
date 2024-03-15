@@ -13,32 +13,67 @@ terraform {
 
 provider "aws" {}
 
-resource "aws_cloudwatch_event_rule" "start" {
-  name                = "let-rds-sleep-start"
-  schedule_expression = "cron(7 6 ? * MON *)" # before maintenance window
-}
-
-resource "aws_cloudwatch_event_rule" "stop" {
-  name                = "let-rds-sleep-stop"
-  schedule_expression = "cron(7 7 ? * MON *)" # after maintenance window
-}
-
-resource "aws_cloudwatch_event_target" "start" {
-  arn  = aws_lambda_function.let-rds-sleep.arn
-  rule = aws_cloudwatch_event_rule.start.name
-
-  input = jsonencode({
-    mode : "start",
+resource "aws_iam_role" "scheduler" {
+  name = "let-rds-sleep-scheduler"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
+        Principal = {
+          Service = "scheduler.amazonaws.com",
+        },
+      },
+    ],
   })
 }
 
-resource "aws_cloudwatch_event_target" "stop" {
-  arn  = aws_lambda_function.let-rds-sleep.arn
-  rule = aws_cloudwatch_event_rule.stop.name
+resource "aws_iam_role_policy" "scheduler" {
+  name   = "let-rds-sleep-scheduler"
+  role   = aws_iam_role.scheduler.id
+  policy = data.aws_iam_policy_document.scheduler.json
+}
 
-  input = jsonencode({
-    mode : "stop",
-  })
+data "aws_iam_policy_document" "scheduler" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "lambda:InvokeFunction",
+    ]
+
+    resources = [
+      aws_lambda_function.let-rds-sleep.arn,
+    ]
+  }
+}
+
+resource "aws_scheduler_schedule" "schedule" {
+  for_each = {
+    start = "cron(7 6 ? * MON *)", # before maintenance window
+    stop  = "cron(7 7 ? * MON *)"  # after maintenance window
+  }
+
+  name       = "let-rds-sleep-${each.key}"
+  group_name = "default"
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression = each.value
+
+  target {
+    arn      = aws_lambda_function.let-rds-sleep.arn
+    role_arn = aws_iam_role.scheduler.arn
+
+    input = jsonencode({
+      mode : each.key,
+    })
+  }
 }
 
 resource "aws_iam_role" "lambda-let-rds-sleep" {
@@ -102,7 +137,7 @@ data "archive_file" "let-rds-sleep-src" {
 }
 
 resource "aws_cloudwatch_log_group" "lambda" {
-  name              = "/aws/lambda/let-rds-sleep-start"
+  name = "/aws/lambda/let-rds-sleep-start"
 }
 
 resource "aws_lambda_function" "let-rds-sleep" {
@@ -119,20 +154,8 @@ resource "aws_lambda_function" "let-rds-sleep" {
     variables = {
       LET_RDS_SLEEP_LOG_LEVEL = "INFO"
       LET_RDS_SLEEP_TARGET    = "Sleep=true"
+      LET_RDS_SLEEP_DRYRUN    = "1"
+      LOG_LEVEL               = "DEBUG"
     }
   }
-}
-
-resource "aws_lambda_permission" "permission-start" {
-  source_arn    = aws_cloudwatch_event_rule.start.arn
-  function_name = aws_lambda_function.let-rds-sleep.function_name
-  action        = "lambda:InvokeFunction"
-  principal     = "events.amazonaws.com"
-}
-
-resource "aws_lambda_permission" "permission-stop" {
-  source_arn    = aws_cloudwatch_event_rule.stop.arn
-  function_name = aws_lambda_function.let-rds-sleep.function_name
-  action        = "lambda:InvokeFunction"
-  principal     = "events.amazonaws.com"
 }
