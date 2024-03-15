@@ -28,7 +28,7 @@ Usage of ./let-rds-sleep:
   -exclude string
     	TagName=Value,... If Tag exists exclude the resource
   -mode string
-    	STOP or START
+    	STOP or START, only for oneshot mode
   -target string
     	TagName=Value,... If no tags given, treat all of resources as target
   -version
