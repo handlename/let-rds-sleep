@@ -15,6 +15,12 @@ import (
 	"github.com/samber/lo"
 )
 
+const EnvPrefix = "LET_RDS_SLEEP"
+
+func getEnv(key string) string {
+	return os.Getenv(fmt.Sprintf("%s_%s", EnvPrefix, key))
+}
+
 type App struct {
 	Mode        string
 	TargetTags  []types.Tag // only resources having all of tags will be process
@@ -53,7 +59,7 @@ func (r Resource) TagsAsString() string {
 type Option func(app *App) error
 
 func init() {
-	logLevel := strings.ToUpper(os.Getenv("LOG_LEVEL"))
+	logLevel := strings.ToUpper(getEnv("LOG_LEVEL"))
 	if logLevel == "" {
 		logLevel = "INFO"
 	}
