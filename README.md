@@ -56,7 +56,7 @@ This tool is supposed to run periodically as a Lambda function.
 Create a function to stop/start RDS/Aurora and invoke them with EventBridge Event Rule.
 Please refer to the definition examples of each AWS resource in the [terraform/example](https://github.com/handlename/let-rds-sleep/tree/main/terraform/example) directory.
 
-## LISENCE
+## LICENSE
 
 MIT
 
