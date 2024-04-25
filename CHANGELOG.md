@@ -1,5 +1,7 @@
 # Changelog
 
+## [v0.3.1](https://github.com/handlename/let-rds-sleep/compare/v0.3.0...v0.3.1) - 2024-04-25
+
 ## [v0.3.0](https://github.com/handlename/let-rds-sleep/compare/v0.2.0...v0.3.0) - 2024-04-25
 - Read environment variables as flags by @handlename in https://github.com/handlename/let-rds-sleep/pull/4
 - Run test on GitHub Actions by @handlename in https://github.com/handlename/let-rds-sleep/pull/6
